@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router';
 
 const routes = [
     {
@@ -24,7 +24,12 @@ const routes = [
                     {
                         path: ':id/:accion',
                         name: 'wiki-detail',
-                        component: () => import(/*webpackChunkName: "Detail"*/'../modules/wiki/components/Detail')
+                        component: () => import(/*webpackChunkName: "Detail"*/'../modules/wiki/components/Detail'),
+                        props: (route) => {
+                            const id = Number(route.params.id)
+                            const accion = route.params.accion
+                            return { id, accion }
+                        }
                     }
                 ]
             }
@@ -32,14 +37,14 @@ const routes = [
     },
     {
         path: '/:pathMatch(.*)*',
-        component: () => import(/* webpackChunkName: "NoPageFound" "*/ '@/components/NoPageFound')
+        component: () => import(/* webpackChunkName: "NoPageFound"*/ '@/components/NoPageFound')
     }
-]
+];
 
 const router = createRouter({
     history: createWebHashHistory(),
     routes,
-})
+});
 
 
-export default router
+export default router;

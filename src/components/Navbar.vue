@@ -7,26 +7,24 @@
   >{{ link.name }}</button>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      links: [
-        { to: 'home', name: 'Home' },
-        { to: 'wiki-table', name: 'Wiki' },
-        // { to: 'game', name: 'Game' },
-      ]
-    }
-  },
-  methods: {
-    goTo(to) {
-      this.$router.push({ name: to })
-    }
-  }
+<script setup>
+import { useRouter } from 'vue-router';
+
+
+const links = [
+  { to: 'home', name: 'Home' },
+  { to: 'wiki-table', name: 'Wiki' },
+  // { to: 'game', name: 'Game' },
+];
+const router = useRouter()
+
+function goTo(to) {
+  router.push({ name: to })
 }
+
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 button {
   margin: 10px;
 }
