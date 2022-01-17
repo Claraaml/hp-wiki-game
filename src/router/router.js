@@ -22,7 +22,7 @@ const routes = [
                         component: () => import(/*webpackChunkName: "Table"*/'../modules/wiki/components/Table')
                     },
                     {
-                        path: ':id',
+                        path: ':id/:accion',
                         name: 'wiki-detail',
                         component: () => import(/*webpackChunkName: "Detail"*/'../modules/wiki/components/Detail')
                     }

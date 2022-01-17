@@ -1,6 +1,10 @@
 <template>
-  <button v-for="let link in links" class="btn btn-primary"
-  @click=""></button>
+  <button
+    v-for="link in links"
+    :key="link.to"
+    class="btn btn-info"
+    @click="goTo(link.to)"
+  >{{ link.name }}</button>
 </template>
 
 <script>
@@ -14,8 +18,16 @@ export default {
       ]
     }
   },
+  methods: {
+    goTo(to) {
+      this.$router.push({ name: to })
+    }
+  }
 }
 </script>
 
 <style scoped>
+button {
+  margin: 10px;
+}
 </style>
