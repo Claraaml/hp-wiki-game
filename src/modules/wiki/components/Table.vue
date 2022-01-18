@@ -2,38 +2,48 @@
     <div>
         <h2>Wiki de los hechizos de las películas del mundo de Harry Potter</h2>
 
-        <!-- <div class="buscador"></div> -->
-
-        <table
-            v-if="spellsListRef && spellsListRef.length"
-            class="table table-striped table-hover table-bordered"
-        >
-            <thead>
-                <tr>
-                    <th scope="col">Nombre</th>
-                    <th scope="col">Efecto</th>
-                    <th scope="col">Contrahechizo</th>
-                    <th scope="col">Tipo</th>
-                    <th scope="col">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="spell in spellsListRef" :key="spell.id">
-                    <td>{{ spell.name }}</td>
-                    <td>{{ spell.effect }}</td>
-                    <td>{{ spell.counterspell }}</td>
-                    <td>{{ spell.type }}</td>
-                    <td>
-                        <button class="btn btn-success" @click="showDetail(spell.id, 'ver')">Ver</button>
-                        <button class="btn btn-info" @click="showDetail(spell.id, 'editar')">Editar</button>
-                        <button class="btn btn-danger" @click="deleteSpell(spell.id)">Eliminar</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="pagination justify-content-end">
-            <button class="btn btn-light" @click="changePage('previous')">Anterior</button>
-            <button class="btn btn-light" @click="changePage('next')">Siguiente</button>
+        <div v-if="!spellsListRef || spellsListRef.length <= 0" class="no-data">
+            <h3>No hay datos para mostrar</h3>
+        </div>
+        <div v-if="spellsListRef && spellsListRef.length > 0">
+            <table class="table table-striped table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Efecto</th>
+                        <th scope="col">Contrahechizo</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="spell in spellsListRef" :key="spell.id">
+                        <td>{{ spell.name }}</td>
+                        <td>{{ spell.effect }}</td>
+                        <td>{{ spell.counterspell }}</td>
+                        <td>{{ spell.type }}</td>
+                        <td>
+                            <button class="btn btn-success" @click="showDetail(spell.id, 'ver')">Ver</button>
+                            <button
+                                class="btn btn-info"
+                                @click="showDetail(spell.id, 'editar')"
+                            >Editar</button>
+                            <button class="btn btn-danger" @click="deleteSpell(spell.id)">Eliminar</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="pagination justify-content-end pages-block">
+                <span class="total-pages">Página {{ currentPageRef }} de {{ totalPages }}</span>
+                <button class="btn btn-light" @click="changePage('first')">Primera</button>
+                <button class="btn btn-light" @click="changePage('previous')">
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                <button class="btn btn-light" @click="changePage('next')">
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+                <button class="btn btn-light" @click="changePage('last')">Ultima</button>
+            </div>
         </div>
     </div>
 </template>
@@ -42,19 +52,33 @@
 
 import { getAllSpells } from "@/api/getAllSpells";
 import { deleteSpellById } from "@/api/deleteSpellById";
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 const allDataRef = ref([]);
 const currentPageRef = ref(1);
-const pageSizeRef = ref(10);
+const pageSizeRef = ref(8);
 let spellsListRef = ref([]);
+
 const router = useRouter();
 
 async function setAllData() {
     const { data } = await getAllSpells();
     allDataRef.value = data.filter((x) => Boolean(x));
 }
+
+const totalPages = computed(() => {
+    const entero = Math.floor(allDataRef.value.length / pageSizeRef.value);
+    const resto = allDataRef.value.length % pageSizeRef.value;
+    let total;
+    if (resto > 0) {
+        total = entero + 1;
+    } else {
+        total = entero;
+    }
+    return total;
+});
+
 
 async function init() {
     await setAllData();
@@ -98,12 +122,23 @@ async function deleteSpell(id) {
 }
 
 function changePage(change) {
-    if (change === 'next') {
-        currentPageRef.value++;
-    } else {
-        currentPageRef.value--;
+    switch (change) {
+        case 'previous':
+            currentPageRef.value--;
+            break;
+        case 'next':
+            currentPageRef.value++;
+            break;
+        case 'first':
+            currentPageRef.value = 1;
+            break;
+        case 'last':
+            currentPageRef.value = totalPages.value;
+            break;
     }
-    setList()
+    setList();
+    console.log('currentPageRef.value', currentPageRef.value)
+    console.log('totalPages', totalPages.value)
 }
 
 
@@ -130,5 +165,22 @@ watch(
 }
 button {
     margin: 10px;
+}
+.no-data {
+    border: 5px solid #fedc00;
+    padding: 25px;
+    margin: 25px;
+    width: 30%;
+}
+.pages-block {
+    margin-right: 250px;
+}
+.total-pages {
+    margin: 25px;
+}
+
+table {
+    width: 85%;
+    margin: 30px;
 }
 </style>
