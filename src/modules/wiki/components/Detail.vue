@@ -69,9 +69,6 @@ const router = useRouter();
 let spellRef = ref({})
 let activeRef = ref(true)
 
-// v-model
-let vmodelnameRef = ref({})
-
 async function getSpell() {
   const data = await getSpellById(props$$.id).then(r => r.data)
   spellRef.value = data
@@ -89,10 +86,9 @@ async function save() {
     effect: spellRef.value.effect,
     counterspell: spellRef.value.counterspell
   }
-  if (props$$.accion === 'nuevo') { } else if (props$$.accion === 'editar') {
-    await putSpellById(spell).then()
-    router.push({ name: 'wiki-table' })
-  }
+  await putSpellById(spell)
+  router.push({ name: 'wiki-table' })
+
 }
 
 onMounted(() => {
