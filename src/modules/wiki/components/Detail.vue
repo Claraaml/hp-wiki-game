@@ -3,11 +3,23 @@
   <form class="row g-3">
     <div class="col-6">
       <label for="name" class="visually">Nombre del hechizo</label>
-      <input type="text" class="form-control" id="name" :value="spell.name" :readonly="!active" />
+      <input
+        type="text"
+        class="form-control"
+        id="name"
+        v-model="spellRef.name"
+        :readonly="!activeRef"
+      />
     </div>
     <div class="col-6">
       <label for="effect" class="visually">Efecto del hechizo</label>
-      <input type="text" class="form-control" id="effect" :value="spell.effect" :readonly="!active" />
+      <input
+        type="text"
+        class="form-control"
+        id="effect"
+        v-model="spellRef.effect"
+        :readonly="!activeRef"
+      />
     </div>
     <div class="col-3">
       <label for="counterspell" class="visually">Contrahechizo</label>
@@ -15,16 +27,22 @@
         type="text"
         class="form-control"
         id="counterspell"
-        :value="spell.counterspell"
-        :readonly="!active"
+        v-model="spellRef.counterspell"
+        :readonly="!activeRef"
       />
     </div>
     <div class="col-3">
       <label for="type" class="visually">Tipo</label>
-      <input type="text" class="form-control" id="type" :value="spell.type" :readonly="!active" />
+      <input
+        type="text"
+        class="form-control"
+        id="type"
+        v-model="spellRef.type"
+        :readonly="!activeRef"
+      />
     </div>
     <div class="col-3 buttons">
-      <button v-show="active" class="btn btn-primary guardar-btn">Guardar Cambios</button>
+      <button v-show="activeRef" class="btn btn-primary guardar-btn" @click="save()">Guardar</button>
       <button class="btn btn-secondary" @click="backToWiki">Volver</button>
     </div>
   </form>
@@ -33,9 +51,10 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { getSpellById } from "@/api/getSpellById"
+import { putSpellById } from "@/api/putSpellById"
 import { useRouter } from "vue-router";
 
-const props = defineProps({
+const props$$ = defineProps({
   id: {
     type: Number,
     required: true
@@ -47,21 +66,38 @@ const props = defineProps({
 })
 
 const router = useRouter();
-let spell = ref({})
-let active = ref(true)
+let spellRef = ref({})
+let activeRef = ref(true)
+
+// v-model
+let vmodelnameRef = ref({})
 
 async function getSpell() {
-  const data = await getSpellById(props.id).then(r => r.data)
-  spell.value = data
+  const data = await getSpellById(props$$.id).then(r => r.data)
+  spellRef.value = data
 }
 
 function backToWiki() {
   router.push({ name: 'wiki-table' })
 }
 
+async function save() {
+  const spell = {
+    id: spellRef.value.id,
+    name: spellRef.value.name,
+    type: spellRef.value.type,
+    effect: spellRef.value.effect,
+    counterspell: spellRef.value.counterspell
+  }
+  if (props$$.accion === 'nuevo') { } else if (props$$.accion === 'editar') {
+    await putSpellById(spell).then()
+    router.push({ name: 'wiki-table' })
+  }
+}
+
 onMounted(() => {
   getSpell()
-  if (props.accion === 'ver') { active.value = false; }
+  if (props$$.accion === 'ver') { activeRef.value = false; }
 })
 </script>
 

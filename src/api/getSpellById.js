@@ -1,6 +1,7 @@
 import spellsApi from "@/api/spellsApi"
 
 export const getSpellById = async (id) => {
-    const spellsArr = await spellsApi.get(`/spells/${id}.json`);
+    const objId = Number(id) - 1;
+    const spellsArr = await spellsApi.get(`/spells/${objId}.json`);
     return spellsArr;
 }

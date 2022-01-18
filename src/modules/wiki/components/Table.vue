@@ -5,7 +5,7 @@
         <!-- <div class="buscador"></div> -->
 
         <table
-            v-if="spellsList && spellsList.length"
+            v-if="spellsListRef && spellsListRef.length"
             class="table table-striped table-hover table-bordered"
         >
             <thead>
@@ -18,7 +18,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="spell in spellsList" :key="spell.id">
+                <tr v-for="spell in spellsListRef" :key="spell.id">
                     <td>{{ spell.name }}</td>
                     <td>{{ spell.effect }}</td>
                     <td>{{ spell.counterspell }}</td>
@@ -31,34 +31,94 @@
                 </tr>
             </tbody>
         </table>
+        <div class="pagination justify-content-end">
+            <button class="btn btn-light" @click="changePage('previous')">Anterior</button>
+            <button class="btn btn-light" @click="changePage('next')">Siguiente</button>
+        </div>
     </div>
 </template>
 
 <script setup>
 
-import { getAllSpells } from "@/api/getAllSpells"
-import { onMounted, ref } from "vue";
+import { getAllSpells } from "@/api/getAllSpells";
+import { deleteSpellById } from "@/api/deleteSpellById";
+import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
-let spellsList = ref([]);
+const allDataRef = ref([]);
+const currentPageRef = ref(1);
+const pageSizeRef = ref(10);
+let spellsListRef = ref([]);
 const router = useRouter();
 
-async function getList() {
-    const data = await getAllSpells().then(r => r.data);
-    spellsList.value = data;
+async function setAllData() {
+    const { data } = await getAllSpells();
+    allDataRef.value = data.filter((x) => Boolean(x));
+}
+
+async function init() {
+    await setAllData();
+}
+
+function setCurrentPage(newValue) {
+    const invalid = !newValue || typeof newValue !== 'number' && newValue <= 0;
+    if (invalid) {
+        currentPageRef.value = currentPageRef.value || 1;
+        return;
+    }
+    currentPageRef.value = newValue;
+}
+
+function setList() {
+    spellsListRef.value = allDataRef.value.filter((x, i) => {
+        const position = i + 1;
+        return position <= currentPageRef.value * pageSizeRef.value &&
+            position > (currentPageRef.value - 1) * pageSizeRef.value;
+    });
+}
+
+function setPageSize(newValue) {
+    const invalid = !newValue || typeof newValue !== 'number' && newValue <= 0;
+    if (invalid) {
+        pageSizeRef.value = pageSizeRef.value || 1;
+        return;
+    }
+
+    pageSizeRef.value = newValue;
 }
 
 function showDetail(id, accion) {
     router.push({ name: 'wiki-detail', params: { id, accion } });
 }
 
-function deleteSpell(id) {
-    console.log('Delete spell.. ', id);
+async function deleteSpell(id) {
+    await deleteSpellById(id);
+    const index = spellsListRef.value.findIndex(x => x.id === id);
+    spellsListRef.value.splice(index, 1);
 }
 
+function changePage(change) {
+    if (change === 'next') {
+        currentPageRef.value++;
+    } else {
+        currentPageRef.value--;
+    }
+    setList()
+}
+
+
 onMounted(() => {
-    getList();
+    init();
 })
+
+watch(
+    allDataRef,
+    () => {
+        setCurrentPage();
+        setPageSize();
+        setList();
+    },
+);
 
 </script>
 
